@@ -1,0 +1,5 @@
+/sys/class/leds
+heartbeat mmc0 cpu0 mmc1
+trigger
+brightness
+2s

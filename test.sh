@@ -1,17 +1,19 @@
 #! /bin/bash
 # test to make sure reading and writing to leds is working
 
+# get config settings from conf.txt
+mapfile -t lines < conf.txt
 # dir to find leds in
-leddir="/sys/class/leds"
+leddir="${lines[0]}"
 # default values for the leds
-defaults=(heartbeat mmc0 cpu0 mmc1)
+defaults=(${lines[1]})
 # file for changing trigger in $leddir
-t="trigger"
+t="${lines[2]}"
 # file for changing brightness in $leddir
-b="brightness"
+b="${lines[3]}"
+# duration to pause for between stages
+d="${lines[4]}"
 
-# pause
-pause () { sleep 2; }
 # echo out previous state for $1
 # if $2 is 1, it will filter the output from cat to only show what is in []
 echoprev ()
@@ -23,40 +25,51 @@ echoprev ()
 	fi
 	echo -e "\tPrevious state for '$1': '$out'"
 }
+# fails the test and exits the script
+fail ()
+{
+	echo Test failed.
+	exit 1
+}
+# attempt to echo $1 to file $2 and fail the whole script if it fails
+try () { echo "$1" > "$2" || fail; }
 
 echo "Entering led directory '$leddir'"
-cd "$leddir"
+cd "$leddir" || fail
 
-pause
+# check that the trigger and brightness files are available in $leddir/*
+
+
+sleep "$d"
 echo "Turning all led triggers to 'none'"
 for led in *"/$t"
 do
 	echoprev "$led" 1
-	echo none > "$led"
+	try none "$led"
 done
 
-pause
+sleep "$d"
 echo "Turning all leds ON"
 for led in *"/$b"
 do
 	echoprev "$led"
-	echo 1 > "$led"
+	try 1 "$led"
 done
 
-pause
+sleep "$d"
 echo "Turning all leds OFF"
 for led in *"/$b"
 do
-	echo 0 > "$led"
+	try 0 "$led"
 done
 
-pause
+sleep "$d"
 echo "Resetting triggers to DEFAULT state"
 i=0
 for led in *"/$t"
 do
 	def="${defaults[i]}"
 	echo -e "\tResetting trigger for '$led' to '$def'"
-	echo "$def" > "$led"
+	try "$def" "$led"
 	(( i++ ))
 done
