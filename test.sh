@@ -51,7 +51,7 @@ do
 done
 
 pause
-echo "Restting triggers to DEFAULT state"
+echo "Resetting triggers to DEFAULT state"
 i=0
 for led in *"/$t"
 do
