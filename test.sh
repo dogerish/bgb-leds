@@ -1,8 +1,8 @@
 #! /bin/bash
 # test to make sure reading and writing to leds is working
 
-# get config settings from conf.txt
-mapfile -t lines < conf.txt
+# get config settings from config.txt
+mapfile -t lines < config.txt
 # dir to find leds in
 leddir="${lines[0]}"
 # default values for the leds
