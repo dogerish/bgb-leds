@@ -5,15 +5,34 @@
 mapfile -t lines < config.txt
 # dir to find leds in
 leddir="${lines[0]}"
+# text before the led's index
+ledpre="${lines[1]}"
+# text after the led's index
+ledsuf="${lines[2]}"
 # default values for the leds
-defaults=(${lines[1]})
+defaults=(${lines[3]})
 # file for changing trigger in $leddir
-t="${lines[2]}"
+t="${lines[4]}"
 # file for changing brightness in $leddir
-b="${lines[3]}"
+b="${lines[5]}"
 # duration to pause for between stages
-d="${lines[4]}"
+d="${lines[6]}"
 
+# pauses for $d time, echos out $1, and then
+# executes felf for every file matching "$leddir/$ledpre"*"$ledsuf/$2",
+# providing the file name and index as the arguments
+felf () { :; }
+foreachled ()
+{
+	sleep "$d"
+	echo "$1"
+	i=0
+	for led in "$leddir/$ledpre"*"$ledsuf/$2"
+	do
+		felf "$led" $i
+		(( i++ ))
+	done
+}
 # echo out previous state for $1
 # if $2 is 1, it will filter the output from cat to only show what is in []
 echoprev ()
@@ -37,39 +56,27 @@ try () { echo "$1" > "$2" || fail; }
 echo "Entering led directory '$leddir'"
 cd "$leddir" || fail
 
-# check that the trigger and brightness files are available in $leddir/*
+felf ()
+{
+	echoprev "$1" 1
+	try none "$1"
+}
+foreachled "Turning all led triggers to 'none'" "$t"
 
+felf ()
+{
+	echoprev "$1"
+	try 1 "$1"
+}
+foreachled "Turning all leds ON" "$b"
 
-sleep "$d"
-echo "Turning all led triggers to 'none'"
-for led in *"/$t"
-do
-	echoprev "$led" 1
-	try none "$led"
-done
+felf () { try 0 "$1"; }
+foreachled "Turning all leds OFF" "$b"
 
-sleep "$d"
-echo "Turning all leds ON"
-for led in *"/$b"
-do
-	echoprev "$led"
-	try 1 "$led"
-done
-
-sleep "$d"
-echo "Turning all leds OFF"
-for led in *"/$b"
-do
-	try 0 "$led"
-done
-
-sleep "$d"
-echo "Resetting triggers to DEFAULT state"
-i=0
-for led in *"/$t"
-do
-	def="${defaults[i]}"
-	echo -e "\tResetting trigger for '$led' to '$def'"
-	try "$def" "$led"
-	(( i++ ))
-done
+felf ()
+{
+	def="${defaults[$2]}"
+	echo -e "\tResetting trigger for '$1' to '$def'"
+	try "$def" "$1"
+}
+foreachled "Resetting triggers to DEFAULT state" "$t"

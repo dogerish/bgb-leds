@@ -1,4 +1,6 @@
 /sys/class/leds
+beaglebone:green:usr
+
 heartbeat mmc0 cpu0 mmc1
 trigger
 brightness
