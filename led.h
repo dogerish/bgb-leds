@@ -20,28 +20,27 @@ class LED
 
 	public:
 		LED(int, Config*);
-		// gets active trigger
-		std::string get_trigger();
-		// sets the trigger to a new state
-		template<typename T>
-		void set_trigger(T);
-		// resets the trigger to its default state as defined in its cfg
-		void reset();
-		// restores the trigger to its original state (from when this was instantiated)
-		void restore();
-
-
-	private:
 		// gets the full file name for in this LED's directory
+		// if `over` is given, it will return that instead of generating the name
 		template<typename T>
-		std::string get_fname(const T);
+		std::string get_fname(const T, std::string over = "");
+		// gets active trigger, optional first argument is the filename to read from
+		std::string get_trigger(std::string = "");
+		// sets the trigger to a new state, optional second argument is filename
+		template<typename T>
+		void set_trigger(T, std::string = "");
+		// resets the trigger to its default state as defined in its cfg
+		void reset(std::string = "");
+		// restores the trigger to its original state (from when this was instantiated)
+		void restore(std::string = "");
 };
 
 // define template functions
 
 template<typename T>
-std::string LED::get_fname(const T fn)
+std::string LED::get_fname(const T fn, std::string over)
 {
+	if (over.length()) return over;
 	std::ostringstream ret;
 	ret
 	<< cfg->leddir << '/'
@@ -52,10 +51,9 @@ std::string LED::get_fname(const T fn)
 
 
 template<typename T>
-void LED::set_trigger(T newmode)
+void LED::set_trigger(T newmode, std::string fn)
 {
-	// open file and write new mode to it
-	std::string fn = get_fname(cfg->trigger);
+	fn = get_fname(cfg->trigger, fn);
 	std::ofstream f(fn);
 	if (f.fail()) throw FileOpenError(fn.c_str());
 	f << newmode;

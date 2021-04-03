@@ -1,3 +1,5 @@
 *.o
 send
+
 Session.vim
+*.swp

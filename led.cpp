@@ -22,12 +22,12 @@ LED::LED(int index, Config* cfg)
 	orig = get_trigger();
 }
 
-std::string LED::get_trigger()
+std::string LED::get_trigger(std::string fn)
 {
-	// holds filename for now
-	std::string mode = get_fname(cfg->trigger);
-	std::ifstream f(mode);
-	if (f.fail()) throw FileOpenError(mode.c_str());
+	fn = get_fname(cfg->trigger, fn);
+	std::string mode;
+	std::ifstream f(fn);
+	if (f.fail()) throw FileOpenError(fn.c_str());
 	// ignore up to '['
 	f.ignore(std::numeric_limits<std::streamsize>::max(), '[');
 	// then read to ']' to get the active mode
@@ -37,5 +37,5 @@ std::string LED::get_trigger()
 	return mode;
 }
 
-void LED::reset() { set_trigger(*def); }
-void LED::restore() { set_trigger(orig); }
+void LED::reset(std::string fn) { set_trigger(*def, fn); }
+void LED::restore(std::string fn) { set_trigger(orig, fn); }
