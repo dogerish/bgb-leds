@@ -1,12 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include "config.h"
+#include "errors.h"
 
 Config getconfig(const char* fn)
 {
 	Config cfg;
-	std::ifstream cfgfile;
-	cfgfile.open(fn);
+	std::ifstream cfgfile(fn);
+	if (cfgfile.fail()) throw FileOpenError(fn);
 
 	std::getline(cfgfile, cfg.leddir);
 	std::getline(cfgfile, cfg.ledpre);
