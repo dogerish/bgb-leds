@@ -9,55 +9,39 @@
 #include <fstream> // set_trigger()[f]
 #include <sstream> // get_fname()[ret]
 #include "errors.h" // set_trigger()[FileOpenError]
+#include "files.h"
 class LED
 {
-	Config* cfg;
+	Config<const char*>* cfg;
 	int index;
 	// default trigger for this LED
-	std::string* def;
+	const char* def;
 	// original trigger from initialization
-	std::string orig;
+	const char* orig;
 
 	public:
-		LED(int, Config*);
+		LED(int, Config<const char*>*);
 		// gets the full file name for in this LED's directory
-		// if `over` is given, it will return that instead of generating the name
-		template<typename T>
-		std::string get_fname(const T, std::string over = "");
+		// if arg 2 is given, it will return that instead of generating the name
+		std::string get_fname(const char*, std::string = "");
+		// gets the filename with get_fname and then opens it with its openfs variant
+		std::ifstream getopen_ifname(const char*, std::string = "");
+		// for std::ofstream
+		std::ofstream getopen_ofname(const char*, std::string = "");
+
 		// gets active trigger, optional first argument is the filename to read from
-		std::string get_trigger(std::string = "");
+		const char* get_trigger(std::string = "");
 		// sets the trigger to a new state, optional second argument is filename
-		template<typename T>
-		void set_trigger(T, std::string = "");
+		void set_trigger(const char*, std::string = "");
 		// resets the trigger to its default state as defined in its cfg
 		void reset(std::string = "");
 		// restores the trigger to its original state (from when this was instantiated)
 		void restore(std::string = "");
+		
+		// gets the current brightness value, optional first is filename to read from
+		int get_bn(std::string = "");
+		// sets the brightness value
+		void set_bn(int value, std::string = "");
 };
-
-// define template functions
-
-template<typename T>
-std::string LED::get_fname(const T fn, std::string over)
-{
-	if (over.length()) return over;
-	std::ostringstream ret;
-	ret
-	<< cfg->leddir << '/'
-	<< cfg->ledpre << index << cfg->ledsuf << '/'
-	<< fn;
-	return ret.str();
-}
-
-
-template<typename T>
-void LED::set_trigger(T newmode, std::string fn)
-{
-	fn = get_fname(cfg->trigger, fn);
-	std::ofstream f(fn);
-	if (f.fail()) throw FileOpenError(fn.c_str());
-	f << newmode;
-	f.close();
-}
 
 #endif
