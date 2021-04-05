@@ -1,7 +1,9 @@
 #ifndef MYERRORS
 #define MYERRORS
-#include <exception>
 // custom exceptions
+
+#include <exception> // std::exception
+
 class FileOpenError : public std::exception
 {
 	const char* file;

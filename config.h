@@ -1,36 +1,41 @@
 #ifndef CONFIG_STRUCT
 #define CONFIG_STRUCT
+// get and hold config data
 
-#include <string>
+#include <string>  // std::string   std::getline
+#include <fstream> // std::ifstream
+#include "files.h" // openifs
+
 // hold configuration info
-// S is data type to store info as, default std::string
-template<typename S>
-class Config
+struct Config
 {
-	public:
-		S leddir;
-		S ledpre;
-		S ledsuf;
-		S defaults[4];
-		S trigger;
-		S brightness;
-};
-template <>
-class Config <std::string>
-{
-	public:
-		std::string leddir;
-		std::string ledpre;
-		std::string ledsuf;
-		std::string defaults[4];
-		std::string trigger;
-		std::string brightness;
-	public:
-		// return copy of Config as c_str's
-		Config<const char*> charify();
+	std::string leddir;
+	std::string ledpre;
+	std::string ledsuf;
+	std::string defaults[4];
+	std::string trigger;
+	std::string brightness;
 };
 
 // read configuration from fn or config.txt
-Config<std::string> getconfig(const char* = "config.txt");
+template<typename T = const char*>
+Config getconfig(T fn = "config.txt")
+{
+	Config cfg;
+	std::ifstream cfgfile = openifs(fn);
+
+	std::getline(cfgfile, cfg.leddir);
+	std::getline(cfgfile, cfg.ledpre);
+	std::getline(cfgfile, cfg.ledsuf);
+
+	// split by spaces
+	for (int i = 0; i < 4; i++)
+		std::getline(cfgfile, cfg.defaults[i], (i == 3) ? '\n' : ' ');
+
+	std::getline(cfgfile, cfg.trigger);
+	std::getline(cfgfile, cfg.brightness);
+
+	return cfg;
+}
 
 #endif

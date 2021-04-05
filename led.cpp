@@ -1,47 +1,27 @@
-#include <iostream>
-#include <stdexcept> // throw std::out_of_range
-#include <fstream> // get_trigger()[f]
-
-// get_trigger()[std::numeric_limits<std::streamsize>::max()]
-#include <limits>
-#include <ios>
-
-#include <string> // get_trigger()[return, mode], get_bn(fn)[std::stoi]
-#include "config.h" // LED(cfg)
-#include "errors.h" // get_trigger()[FileOpenError]
 #include "led.h"
+#include "config.h"  // Config
+#include <exception> // std::out_of_range
+#include <string>    // std::string         std::getline  std::stoi
+#include "files.h"   // openifs             openofs
+#include <fstream>   // std::ifstream       std::ofstream
+#include <limits>    // std::numeric_limits
+#include <ios>       // std::streamsize
 
-LED::LED(int index, Config<const char*>* cfg)
+LED::LED(int index, Config* cfg)
 {
-	if (index < 0 || index > 3)
-		throw std::out_of_range("LED::index");
+	if (index < 0 || index > 3) throw std::out_of_range("LED::index");
 	this->index = index;
 	this->cfg = cfg;
+	triggerfn = get_fname(cfg->trigger);
+	bnfn = get_fname(cfg->brightness);
 	// set default and original triggers
 	def = cfg->defaults[index];
 	orig = get_trigger();
 }
 
-std::string LED::get_fname(const char* fn, std::string over)
+std::string LED::get_trigger()
 {
-	if (over.length()) return over.c_str();
-	std::ostringstream ret;
-	ret
-	<< cfg->leddir << '/'
-	<< cfg->ledpre << index << cfg->ledsuf << '/'
-	<< fn;
-	return ret.str();
-}
-
-std::ifstream LED::getopen_ifname(const char* fn, std::string over)
-{ return openifs(get_fname(fn, over).c_str()); }
-std::ofstream LED::getopen_ofname(const char* fn, std::string over)
-{ return openofs(get_fname(fn, over).c_str()); }
-
-
-const char* LED::get_trigger(std::string fn)
-{
-	std::ifstream f = getopen_ifname(cfg->trigger, fn);
+	std::ifstream f = openifs(triggerfn);
 	std::string mode;
 	// ignore up to '['
 	f.ignore(std::numeric_limits<std::streamsize>::max(), '[');
@@ -49,30 +29,24 @@ const char* LED::get_trigger(std::string fn)
 	std::getline(f, mode, ']');
 	f.close();
 
-	return mode.c_str();
+	return mode;
 }
-void LED::set_trigger(const char* newmode, std::string fn)
+
+void LED::reset() { set_trigger(def); }
+void LED::restore() { set_trigger(orig); }
+
+int LED::get_bn()
 {
-	std::ofstream f = getopen_ofname(cfg->trigger, fn);
-	f << newmode;
+	std::ifstream f = openifs(bnfn);
+	std::string tmp;
+	f >> tmp;
 	f.close();
+	return std::stoi(tmp);
 }
 
-void LED::reset(std::string fn) { set_trigger(def, fn); }
-void LED::restore(std::string fn) { set_trigger(orig, fn); }
-
-int LED::get_bn(std::string fn)
+void LED::set_bn(int value)
 {
-	std::ifstream f = getopen_ifname(cfg->brightness, fn);
-	std::string br;
-	f >> br;
-	f.close();
-	return std::stoi(br);
-}
-
-void LED::set_bn(int value, std::string fn)
-{
-	std::ofstream f = getopen_ofname(cfg->brightness, fn);
+	std::ofstream f = openofs(bnfn);
 	f << value;
 	f.close();
 }
