@@ -1,7 +1,7 @@
-#include "config.h" // Config    getconfig
-#include "led.h"    // LED
-#include <iostream> // std::cout std::endl
-#include <unistd.h> // usleep
+#include "src/config.h" // Config    getconfig
+#include "src/led.h"    // LED
+#include <iostream>     // std::cout std::endl
+#include <unistd.h>     // usleep
 
 int main()
 {

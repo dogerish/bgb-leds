@@ -1,28 +1,32 @@
-test: test.o config.o led.o errors.o
-	g++ test.o config.o led.o errors.o -o test
+test: bin/test
+	
+bin/test: precomp/test.o precomp/config.o precomp/led.o precomp/errors.o
+	g++ precomp/test.o precomp/config.o precomp/led.o precomp/errors.o -o bin/test
 
-test.o: test.cpp config.h led.h
-	g++ -c test.cpp
-config.o: config.cpp config.h errors.h
-	g++ -c config.cpp
-led.o: led.cpp led.h config.h errors.h
-	g++ -c led.cpp
-errors.o: errors.cpp errors.h
-	g++ -c errors.cpp
+precomp/test.o: test.cpp src/config.h src/led.h
+	g++ -c test.cpp -o precomp/test.o
+precomp/config.o: src/config.cpp src/config.h src/errors.h
+	g++ -c src/config.cpp -o precomp/config.o
+precomp/led.o: src/led.cpp src/led.h src/config.h src/errors.h
+	g++ -c src/led.cpp -o precomp/led.o
+precomp/errors.o: src/errors.cpp src/errors.h
+	g++ -c src/errors.cpp -o precomp/errors.o
 
 # debug versions
-debug: test-dbg.o config-dbg.o led-dbg.o errors-dbg.o
-	g++ -g test-dbg.o config-dbg.o led-dbg.o errors-dbg.o -o debug
+debug: bin/debug
+	
+bin/debug: precomp/test-dbg.o precomp/config-dbg.o precomp/led-dbg.o precomp/errors-dbg.o
+	g++ -g precomp/test-dbg.o precomp/config-dbg.o precomp/led-dbg.o precomp/errors-dbg.o -o bin/debug
 
-test-dbg.o: test.cpp config.h led.h
-	g++ -g -c test.cpp -o test-dbg.o
-config-dbg.o: config.cpp config.h errors.h
-	g++ -g -c config.cpp -o config-dbg.o
-led-dbg.o: led.cpp led.h config.h errors.h
-	g++ -g -c led.cpp -o led-dbg.o
-errors-dbg.o: errors.cpp errors.h
-	g++ -g -c errors.cpp -o errors-dbg.o
+precomp/test-dbg.o: test.cpp src/config.h src/led.h
+	g++ -g -c test.cpp -o precomp/test-dbg.o -o precomp/test-dbg.o
+precomp/config-dbg.o: src/config.cpp src/config.h src/errors.h
+	g++ -g -c src/config.cpp -o precomp/config-dbg.o -o precomp/config-dbg.o
+precomp/led-dbg.o: src/led.cpp src/led.h src/config.h src/errors.h
+	g++ -g -c src/led.cpp -o precomp/led-dbg.o -o precomp/led-dbg.o
+precomp/errors-dbg.o: src/errors.cpp src/errors.h
+	g++ -g -c src/errors.cpp -o precomp/errors-dbg.o -o precomp/errors-dbg.o
 
 
 clean:
-	rm *.o
+	rm precomp/*.o

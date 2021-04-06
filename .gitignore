@@ -1,4 +1,5 @@
 *.o
+precomp/*.o
 send
 
 Session.vim
