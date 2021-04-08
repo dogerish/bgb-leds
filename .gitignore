@@ -1,5 +1,6 @@
 *.o
 precomp/*.o
+precomp-dbg/*.o
 send
 
 Session.vim
