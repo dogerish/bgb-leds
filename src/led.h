@@ -3,7 +3,7 @@
 // LED class: controls one led
 
 #include "config.h" // Config
-#include <string>   // std::string
+#include <string>   // std::string        std::getline
 #include <fstream>  // std::ifstream      std::ofstream
 #include <sstream>  // std::ostringstream
 
@@ -47,6 +47,17 @@ class LED
 		int get_bn();
 		// sets the brightness value
 		void set_bn(int);
+
+		// versatile getter and setter, not for any specific property
+		// just gets the filename with get_fname and then reads/writes to/from that file
+		// last argument is filename override for get_fname
+		// returns first line of file, without an ending newline character
+		template<typename N>
+		std::string vget(N, std::string = "");
+		// arg1 = file name to give to get_fname
+		// arg2 = data to write to file
+		template<typename N, typename T>
+		void vset(N, T, std::string = "");
 };
 
 template<typename T>
@@ -73,6 +84,23 @@ void LED::set_trigger(T newmode)
 {
 	std::ofstream f = openofs(triggerfn);
 	f << newmode;
+	f.close();
+}
+
+template<typename N>
+std::string LED::vget(N fn, std::string over)
+{
+	std::ifstream f = getopen_ifname(fn, over);
+	std::string out;
+	std::getline(f, out);
+	f.close();
+	return out;
+}
+template<typename N, typename T>
+void LED::vset(N fn, T data, std::string over)
+{
+	std::ofstream f = getopen_ofname(fn, over);
+	f << data;
 	f.close();
 }
 

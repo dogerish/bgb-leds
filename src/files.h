@@ -2,6 +2,7 @@
 #define FILES
 // functions for dealing with files
 
+#include <string>   // std::string
 #include <fstream>  // std::ifstream std::ofstream
 #include "errors.h" // FileOpenError
 
@@ -10,7 +11,11 @@ template<typename streamtype, typename T>
 streamtype openfs(T fn)
 {
 	streamtype f(fn);
-	if (f.fail()) throw FileOpenError(std::string(fn).c_str());
+	if (f.fail())
+	{
+		std::string tmp(fn);
+		throw FileOpenError(tmp.c_str());
+	}
 	return f;
 }
 // open input file stream
